@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
 import datetime
-from time import time
 import os
-import json
 import yaml
 import glob
 
@@ -258,6 +256,10 @@ class DataSource():
         return self.__data
 
     @property
+    def normalized_data(self):
+        return self.data / self.domain
+
+    @property
     def info(self):
         return self.__info
 
@@ -269,8 +271,11 @@ class DataSource():
     def column_names(self):
         return self.__column_names
 
-    def __call__(self):
-        return self.data
+    def __call__(self, normalized=False):
+        if not normalized:
+            return self.data
+        else:
+            return self.normalized_data
 
     def get_histogram(self, binning):
         values, _ = np.histogramdd(

@@ -1,10 +1,20 @@
 import numpy as np
+import dask.bag as daskb
+
 
 class KPIs():
-    def __init__(self, hist1, hist2):
-        """hist1 is the histogram of the data the model is derived from,
-           hist2 is the histogram of the newly generated data.
-           Note: both must be using the same binning!"""
+    def __init__(self, real_data, generated_data, binning):
+        """real_data is the data source of the original data,
+           generated_data is the data source of the newly generated data.
+           binning is the binning the generated data is based on"""
+
+        self.__rd = real_data
+        self.__gd = generated_data
+        self.__binning = binning
+
+        hist1 = real_data.get_histogram(binning)
+        hist2 = generated_data.get_histogram(binning)
+
         self.__h1 = hist1           # Model Source, realH
         self.__h2 = hist2           # ndH, generated
 
@@ -34,7 +44,8 @@ class KPIs():
                             self.__diff[index],
                             bin_vols[index])
                 return sum([get_quality(r, delta) * vol
-                            for r, delta, vol in pairs]) / bin_vols[index].sum()
+                            for r, delta, vol in pairs]) / \
+                    bin_vols[index].sum()
 
         abi = [True] * self.__h1f.size
         nebi = self.__h1f > 0
@@ -42,3 +53,24 @@ class KPIs():
 
         return (quality(abi), quality(nebi), quality(ebi))
 
+    def distance(self):
+        def _half(data_point, data_set):
+            return np.linalg.norm(data_set - data_point, axis=1).mean()
+
+        def apply_to_chunk(chunk, other_set):
+            res = 0
+            for data_point in chunk:
+                res += _half(data_point, other_set)
+            return res
+
+        def split_set_and_apply(set1, set2):
+            bag = daskb.from_sequence(
+                np.array_split(set1, 16))
+            return sum(bag.map(apply_to_chunk, other_set=set2).compute())
+
+        def set2set(set1, set2):
+            s1 = split_set_and_apply(set1, set2)
+            s2 = split_set_and_apply(set2, set1)
+            return (s1 + s2) / (set1.shape[0] + set2.shape[0])
+
+        return set2set(self.__rd(normalized=True), self.__gd(normalized=True))

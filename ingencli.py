@@ -132,15 +132,12 @@ def compare(real, generated, binning):
             "Dimensions of binning (%d) and data sources (%d) mismatch."
             % (binning.dimensions, len(real.domain)))
 
-    # histogram datasets
-    real_hist = real.get_histogram(binning)
-    generated_hist = generated.get_histogram(binning)
-
     # calculate KPIs
-    kpis = KPIs(real_hist, generated_hist)
+    kpis = KPIs(real, generated, binning)
 
     click.echo("Error:\t%f" % kpis.error())
     click.echo("Q:\t%f\nQNEB:\t%f\nQEB:\t%f" % kpis.quality())
+    click.echo("Point Distance:\t%f" % kpis.distance())
 
 
 @cli.group(short_help='subcommand to visualize things', name='plot')

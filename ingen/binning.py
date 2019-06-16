@@ -1,7 +1,6 @@
 import numpy as np
 
 from enum import Enum
-from time import time
 from sklearn.cluster import KMeans
 from .helper import centering
 from .helper import to_dict
@@ -22,7 +21,6 @@ class Pad_Modes(Enum):
 
 
 class Binning():
-
     def __init__(self, type, edges, random_seed=0):
         self.__type = type
         self.__edges = list(np.copy(edges))
