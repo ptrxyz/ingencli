@@ -303,14 +303,19 @@ class DataSourceIO():
         return src
 
     @staticmethod
-    def write(datasource, filename):
+    def write(datasource, filename, additional_info=None):
         datafile = "%s.csv" % filename
         metafile = "%s.yaml" % filename
 
         np.savetxt(datafile, datasource.data, delimiter=",")
 
+        si = datasource.info.__dict__
+        if additional_info:
+            for k, v in additional_info.items():
+                si[k] = v
+
         mobj = {
-            "source_info": datasource.info.__dict__,
+            "source_info": si,
             "dataset": {
                 "domain": [float(x) for x in datasource.domain],
                 "column_names": datasource.column_names

@@ -284,7 +284,9 @@ def g_bundles(use_recommended, print_ebv, datasource,
 
     MODEL has to be a previously generated model file.
 
-    AMOUNT is an integer that is ignored if --use-recommended is provided.
+    AMOUNT is an integer that is the amount of bundles that should be
+    generated. When --use-recommended is provided, AMOUNT functions as an upper
+    limit if set to a value >0.
 
     BINNING can be a path to a previously created binning, or custom bin edges
     in all dimension: dimensions are separated by colons, edge values in
@@ -318,19 +320,32 @@ def g_bundles(use_recommended, print_ebv, datasource,
     # create DatasetGenerator
     bg = BundleGenerator(model, binning)
 
+    # create dict for additional information
+    addi = {}
+
     # use recommended amount
     if use_recommended:
-        amount = bg.recommended_amount(real_histogram)
+        recommended = bg.recommended_amount(real_histogram)
+        if amount <= 0:
+            amount = recommended
+        else:
+            amount = min(amount, recommended)
+        addi["recommended"] = recommended
         click.echo("Using recommended amount: %d" % amount)
+
+    ebv = bg.expected_best_quality(amount, real_histogram)
+    addi["ebv"] = np.float(ebv)
+    addi["amount"] = amount
 
     # print ebv
     if print_ebv:
-        ebv = bg.expected_best_quality(amount, real_histogram)
         click.echo("Expected best quality: %f" % ebv)
 
     # generate bundles and save to OUTPUT
     bundles = bg.generate(amount)
-    DataSourceIO.write(bundles, output)
+    DataSourceIO.write(bundles,
+                       output,
+                       additional_info={"metadata_from_bundle_generation": addi})
 
 
 class G_DATASOURCE():
