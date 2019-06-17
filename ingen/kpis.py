@@ -65,7 +65,7 @@ class KPIs():
 
         def split_set_and_apply(set1, set2):
             bag = daskb.from_sequence(
-                np.array_split(set1, 16))
+                np.array_split(set1, 128))
             return sum(bag.map(apply_to_chunk, other_set=set2).compute())
 
         def set2set(set1, set2):
