@@ -71,7 +71,7 @@ def validate_binning(ctx, param, value):
     if os.path.isfile(value):
         try:
             with open(value, "r") as f:
-                bobj = yaml.load(f)
+                bobj = yaml.load(f, Loader=yaml.UnsafeLoader)
                 return Binning.from_dict(bobj)
         except Exception:
             # raise this if file exists but does not contan a binning

@@ -59,7 +59,7 @@ class Model():
     @staticmethod
     def from_file(filename):
         with open(filename, "r") as f:
-            mobj = yaml.load(f)
+            mobj = yaml.load(f, Loader=yaml.UnsafeLoader)
         return Model.from_dict(mobj)
 
     def to_file(self, filename):

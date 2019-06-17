@@ -289,7 +289,7 @@ class DataSourceIO():
         datafile = "%s.csv" % filename
         metafile = "%s.yaml" % filename
         with open(metafile, "r") as mf:
-            mobj = yaml.load(mf)
+            mobj = yaml.load(mf, Loader=yaml.UnsafeLoader)
 
         data = np.loadtxt(datafile, delimiter=",")
 
