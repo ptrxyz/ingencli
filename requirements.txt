@@ -1,7 +1,7 @@
 Click==7.0
 cloudpickle==1.2.1
 cycler==0.10.0
-dask==1.2.2
+dask==2021.10.0
 entrypoints==0.3
 flake8==3.7.7
 joblib==0.13.2
